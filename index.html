@@ -40,18 +40,21 @@
         canvas.width = container.offsetWidth;
         canvas.height = container.offsetHeight;
 
-        const circle = { x: canvas.width / 2, y: canvas.height / 1.4, radius: 70 };
-        
+        // Define the circular area
+        const circle = { 
+            x: canvas.width / 2, 
+            y: canvas.height / 1.4, 
+            radius: 70 
+        };
+
         // Fill canvas with gray overlay
         ctx.fillStyle = '#ccc';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Create circular scratchable area
+        // Create circular scratchable mask
         ctx.globalCompositeOperation = 'destination-out';
-        ctx.beginPath();
-        ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
-        ctx.fill();
 
+        // Track if the user is drawing
         let isDrawing = false;
 
         function getMousePos(evt) {
@@ -62,16 +65,28 @@
             };
         }
 
+        function isWithinCircle(pos) {
+            const dist = Math.sqrt(
+                (pos.x - circle.x) ** 2 + (pos.y - circle.y) ** 2
+            );
+            return dist <= circle.radius;
+        }
+
         canvas.addEventListener('mousedown', (e) => {
-            isDrawing = true;
+            const pos = getMousePos(e);
+            if (isWithinCircle(pos)) {
+                isDrawing = true;
+            }
         });
 
         canvas.addEventListener('mousemove', (e) => {
             if (!isDrawing) return;
             const pos = getMousePos(e);
-            ctx.beginPath();
-            ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
-            ctx.fill();
+            if (isWithinCircle(pos)) {
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
+                ctx.fill();
+            }
         });
 
         canvas.addEventListener('mouseup', () => {
